@@ -39,7 +39,8 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [frontend-build]
+          keys:
+            - frontend-build-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Build frontend
           command: |
@@ -48,7 +49,7 @@ jobs:
             npm run build
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontend-build
+          key: frontend-build-${CIRCLE_WORKFLOW_ID}
 
   build-backend:
     docker:
@@ -56,7 +57,8 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [backend-build]
+          keys:
+            - backend-build-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Build backend
           command: |
@@ -65,7 +67,7 @@ jobs:
             npm run build
       - save_cache:
           paths: [backend/node_modules]
-          key: backend-build
+          key: backend-build-${CIRCLE_WORKFLOW_ID}
 
   test-frontend:
     docker:
@@ -75,7 +77,8 @@ jobs:
       - checkout
       # Restore from cache
       - restore_cache:
-          keys: [frontend-build]
+          keys:
+            - frontend-build-${CIRCLE_WORKFLOW_ID}
       # Your job code here
       - run:
           name: Test frontend
@@ -91,7 +94,8 @@ jobs:
       - checkout
       # Restore from cache
       - restore_cache:
-          keys: [backend-build]
+          keys:
+            - backend-build-${CIRCLE_WORKFLOW_ID}
       # Your job code here
       - run:
           name: Test backend
