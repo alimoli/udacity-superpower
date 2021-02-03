@@ -73,13 +73,10 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
       - checkout
-      # Restore from cache
       - restore_cache:
           keys:
             - frontend-build-${CIRCLE_WORKFLOW_ID}
-      # Your job code here
       - run:
           name: Test frontend
           command: |
@@ -90,35 +87,44 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
       - checkout
-      # Restore from cache
       - restore_cache:
           keys:
             - backend-build-${CIRCLE_WORKFLOW_ID}
-      # Your job code here
       - run:
           name: Test backend
           command: |
             cd backend
             npm run test
-#
-#  scan-frontend:
-#    docker:
-#    # Docker image here
-#    steps:
-#    # Checkout code from git
-#    # Restore from cache
-#    # Your job code here
-#
-#  scan-backend:
-#    docker:
-#    # Docker image here
-#    steps:
-#    # Checkout code from git
-#    # Restore from cache
-#    # Your job code here
-#
+
+  scan-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - frontend-build-${CIRCLE_WORKFLOW_ID}
+      - run:
+          name: Test backend
+          command: |
+            cd frontend
+            npm audit --audit-level=critical
+
+  scan-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - backend-build-${CIRCLE_WORKFLOW_ID}
+      - run:
+          name: Test backend
+          command: |
+            cd backend
+            npm audit --audit-level=critical
+
 #  deploy-infrastructure:
 #    docker:
 #    # Docker image here that supports AWS CLI
