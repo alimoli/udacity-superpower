@@ -106,7 +106,7 @@ jobs:
           keys:
             - frontend-build-${CIRCLE_WORKFLOW_ID}
       - run:
-          name: Test backend
+          name: Check deps frontend
           command: |
             cd frontend
             npm audit --audit-level=critical
@@ -120,7 +120,7 @@ jobs:
           keys:
             - backend-build-${CIRCLE_WORKFLOW_ID}
       - run:
-          name: Test backend
+          name: Check deps backend
           command: |
             cd backend
             npm audit --audit-level=critical
