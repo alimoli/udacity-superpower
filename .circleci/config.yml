@@ -8,20 +8,16 @@ commands:
   notify-failure:
     description: Notify failure to Slack
     steps:
-      - run:
-          command: |
-            - slack/notify:
-                event: fail
-                template: basic_fail_1
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   notify-success:
     description: Notify success to Slack
     steps:
-      - run:
-          command: |
-            - slack/notify:
-                event: pass
-                template: success_tagged_deploy_1
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
 
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
