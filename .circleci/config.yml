@@ -279,8 +279,6 @@ jobs:
             printenv >> ./backend/.env
             cd backend
             npm run migrations > migrationOutput.txt
-            cat migrationOutput.txt
-            echo grep -c "has been executed successfully" migrationOutput.txt
           no_output_timeout: 15m
       - run:
           name: Send migration results to memstash
@@ -288,7 +286,6 @@ jobs:
             cd backend
             ls -la
             cat migrationOutput.txt
-            echo grep -c "has been executed successfully" migrationOutput.txt
             MIGRATION_RESULT=$(grep -c "has been executed successfully" migrationOutput.txt)
             echo $MIGRATION_RESULT
             curl -H "Content-Type: text/plain" \
