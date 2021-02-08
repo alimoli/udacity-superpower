@@ -264,24 +264,37 @@ jobs:
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure
-#
-#  run-migrations:
-#    docker:
-#    # Docker image here that supports NodeJS
-#    steps:
-#      # Checkout code from git
-#      - run:
-#          name: Run migrations
-#          command: |
-#            # Your code here
-#            exit 1
-#      - run:
-#          name: Send migration results to memstash
-#          command: |
-#            # Your code here
-#            exit 1
-#      # Here's where you will add some code to rollback on failure
-#
+
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: backend-build-${CIRCLE_WORKFLOW_ID}
+      - run:
+          name: Run migrations
+          command: |
+            echo printenv
+            printenv >> ./backend/.env
+            cd backend
+            npm run migrations > migrationOutput.txt
+            cat migrationOutput.txt
+          no_output_timeout: 5m
+      - run:
+          name: Send migration results to memstash
+          command: |
+            cd backend
+            echo grep -c "No migrations are pending" migrationOutput.txt
+            MIGRATION_RESULT=`grep -c "No migrations are pending" migrationOutput.txt`
+            echo $MIGRATION_RESULT
+            curl -H "Content-Type: text/plain" \
+               -H "token: ${CIRCLE_WORKFLOW_ID}" \
+               --request PUT \
+               --data ${MIGRATION_RESULT} \
+               https://api.memstash.io/values/migration_result
+      # Here's where you will add some code to rollback on failure
+
 #  deploy-frontend:
 #    docker:
 #    # Docker image here that supports AWS CLI
@@ -398,8 +411,8 @@ workflows:
               only: [main]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-#      - run-migrations:
-#          requires: [configure-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
 #      - deploy-frontend:
 #          requires: [run-migrations]
 #      - deploy-backend:
