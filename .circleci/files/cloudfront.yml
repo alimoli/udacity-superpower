@@ -1,3 +1,5 @@
+# aws cloudformation create-stack --template-body file://cloudfront.yml --stack-name udapeople --parameters ParameterKey=WorkflowID,ParameterValue=limoli92
+
 Description: >
   Cloudfront distribution for UdaPeople.
 
@@ -8,7 +10,7 @@ Parameters:
 
 
 Resources:
-  
+
   CloudFrontOriginAccessIdentity:
     Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
     Properties:
