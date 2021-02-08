@@ -280,7 +280,7 @@ jobs:
             cd backend
             npm run migrations > migrationOutput.txt
             cat migrationOutput.txt
-          no_output_timeout: 5m
+          no_output_timeout: 15m
       - run:
           name: Send migration results to memstash
           command: |
@@ -337,7 +337,7 @@ jobs:
             pip3 install awscli
       - run:
           name: Deploy backend
-          no_output_timeout: 5m
+          no_output_timeout: 15m
           command: |
             BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/instance_ip)
             echo BACKEND INSTANCE IP FROM MEMSTASH $BACKEND_IP
