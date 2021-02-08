@@ -25,4 +25,4 @@
         timeout: 60
 
   roles:
-    - configure-server-dependencies
+    - configure-server
