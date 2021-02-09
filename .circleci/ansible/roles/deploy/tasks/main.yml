@@ -22,19 +22,20 @@
     dest: /home/ubuntu/app/
     owner: ubuntu
 
-- name: "Install backend dependencies using NPM"
-  command: npm install
-  args:
-    chdir: /home/ubuntu/app
-
-- name: "Build backend project"
-  command: npm run build
-  args:
-    chdir: /home/ubuntu/app
-
-- name: "List folders for dist folder check"
+- name: "Copy package.json to server"
   become: true
-  command: ls
+  copy:
+    src: /tmp/workspace/package.json
+    dest: /home/ubuntu/app/
+    owner: ubuntu
+
+- name: "List folders for debug purpose"
+  command: ls -la
+  args:
+    chdir: /home/ubuntu/app
+
+- name: "Install backend dependencies using NPM"
+  command: npm install --production
   args:
     chdir: /home/ubuntu/app
 
