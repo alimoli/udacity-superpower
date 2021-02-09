@@ -218,18 +218,25 @@ jobs:
               --stack-name "frontend-build-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
       - run:
-          name: Add back-end ip to ansible inventory (using memstash.io)
+          name: Add back-end ip to ansible inventory and store that using memstash.io
           command: |
             INSTANCE_IP=$(aws ec2 describe-instances \
              --filters 'Name=tag:Name,Values=backend-*' \
              --query "Reservations[*].Instances[*].PublicIpAddress" \
              --output text)
-             echo BACKEND EC2 IP ${INSTANCE_IP}
-             curl -H "Content-Type: text/plain" \
+
+            echo BACKEND EC2 IP ${INSTANCE_IP}
+            echo "${INSTANCE_IP}" >> .circleci/ansible/inventory.txt
+
+            curl -H "Content-Type: text/plain" \
                 -H "token: ${CIRCLE_WORKFLOW_ID}" \
                 --request PUT \
                 --data ${INSTANCE_IP} \
                 https://api.memstash.io/values/instance_ip
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
       - destroy-environment
 
   configure-infrastructure:
