@@ -107,7 +107,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - frontend-build-${CIRCLE_WORKFLOW_ID}
+            - frontend-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Build frontend
           command: |
@@ -116,7 +116,7 @@ jobs:
             npm run build
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontend-build-${CIRCLE_WORKFLOW_ID}
+          key: frontend-${CIRCLE_WORKFLOW_ID}
       - notify-failure
       - notify-success
 
@@ -127,7 +127,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - backend-build-${CIRCLE_WORKFLOW_ID}
+            - backend-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Build backend
           command: |
@@ -136,7 +136,7 @@ jobs:
             npm run build
       - save_cache:
           paths: [backend/node_modules]
-          key: backend-build-${CIRCLE_WORKFLOW_ID}
+          key: backend-${CIRCLE_WORKFLOW_ID}
       - notify-failure
       - notify-success
 
@@ -147,7 +147,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - frontend-build-${CIRCLE_WORKFLOW_ID}
+            - frontend-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Test frontend
           command: |
@@ -161,7 +161,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - backend-build-${CIRCLE_WORKFLOW_ID}
+            - backend-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Test backend
           command: |
@@ -175,7 +175,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - frontend-build-${CIRCLE_WORKFLOW_ID}
+            - frontend-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Scan deps frontend
           command: |
@@ -189,7 +189,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - backend-build-${CIRCLE_WORKFLOW_ID}
+            - backend-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Scan deps backend
           command: |
@@ -201,13 +201,15 @@ jobs:
       - image: amazon/aws-cli:2.0.6
     steps:
       - checkout
+      - run: yum install -y tar
+      - run: yum install -y gzip
       - run:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags project=udapeople-backend \
-              --stack-name "backend-build-${CIRCLE_WORKFLOW_ID}" \
+              --stack-name "backend-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
       - run:
           name: Ensure front-end infrastructure exist
@@ -215,7 +217,7 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --tags project=udapeople-frontend \
-              --stack-name "frontend-build-${CIRCLE_WORKFLOW_ID}" \
+              --stack-name "frontend-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
       - run:
           name: Add back-end ip to ansible inventory and store that using memstash.io
@@ -271,7 +273,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: backend-build-${CIRCLE_WORKFLOW_ID}
+          keys: backend-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Run migrations
           command: |
