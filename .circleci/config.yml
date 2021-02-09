@@ -134,9 +134,21 @@ jobs:
             cd backend
             npm i
             npm run build
+      - run:
+          name: Copy compiled backend for future use in Ansible
+          command: |
+            mkdir /tmp/workspace
+            cp ./backend/package.json /tmp/workspace/
+            cd backend/dist
+            tar -zcvf /tmp/workspace/backend.tar.gz ./
       - save_cache:
           paths: [backend/node_modules]
           key: backend-${CIRCLE_WORKFLOW_ID}
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - backend.tar.gz
+            - package.json
       - notify-failure
       - notify-success
 

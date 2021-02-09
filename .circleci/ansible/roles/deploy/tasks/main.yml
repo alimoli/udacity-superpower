@@ -9,30 +9,37 @@
     name: ["nodejs", "npm"]
     update_cache: yes
 
-- name: "Copy backend files from Circle CI server"
+- name: "Create app folder"
   become: true
-  copy:
-    src: ~/project/backend
-    dest: /home/ubuntu
+  file:
+    path: /home/ubuntu/app
+    state: directory
+
+- name: "Copy backend build to server"
+  become: true
+  unarchive:
+    src: /tmp/workspace/backend.tar.gz
+    dest: /home/ubuntu/app/
+    owner: ubuntu
 
 - name: "Install backend dependencies using NPM"
   command: npm install
   args:
-    chdir: /home/ubuntu
+    chdir: /home/ubuntu/app
 
 - name: "Build backend project"
   command: npm run build
   args:
-    chdir: /home/ubuntu
+    chdir: /home/ubuntu/app
 
 - name: "List folders for dist folder check"
   become: true
   command: ls
   args:
-    chdir: /home/ubuntu
+    chdir: /home/ubuntu/app
 
 - name: "Use PM2 to run backend server"
   become: true
   command: pm2 start npm -- run "start"
   args:
-    chdir: /home/ubuntu/dist
+    chdir: /home/ubuntu/app
