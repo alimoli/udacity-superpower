@@ -9,6 +9,10 @@
     name: ["nodejs", "npm"]
     update_cache: yes
 
+- name: "Install the the latest NPM version globally"
+  become: true
+  command: npm install -g npm
+
 - name: "Create app folder"
   become: true
   file:
@@ -28,11 +32,6 @@
     src: /tmp/workspace/package.json
     dest: /home/ubuntu/app/
     owner: ubuntu
-
-- name: "List folders for debug purpose"
-  command: ls -la
-  args:
-    chdir: /home/ubuntu/app
 
 - name: "Install backend dependencies using NPM"
   command: npm install
