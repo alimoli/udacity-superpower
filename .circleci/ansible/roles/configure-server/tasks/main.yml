@@ -1,15 +1,15 @@
-- name: "upgrade packages."
+- name: "Upgrade packages"
   become: true
   apt:
     upgrade: "yes"
 
-- name: "install dependencies."
+- name: "Install nodejs"
   become: true
-  apt:
-    name: ["nodejs", "npm"]
-    update_cache: yes
+  shell: |
+    curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+    sudo apt-get install -y nodejs
 
-- name: "install pm2"
+- name: "Install pm2"
   become: true
   npm:
     name: pm2
