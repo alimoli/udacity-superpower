@@ -285,10 +285,7 @@ jobs:
           command: |
             cd backend
             ls -la
-            echo "Before"
-            grep -c "has been executed successfully" migrationOutput.txt
-            echo "After"
-            MIGRATION_RESULT=$(grep -c "has been executed successfully" migrationOutput.txt)
+            MIGRATION_RESULT=$(grep -c "has been executed successfully" migrationOutput.txt) || true
             echo $MIGRATION_RESULT
             curl -v -H "Content-Type: text/plain" \
                -H "token: ${CIRCLE_WORKFLOW_ID}" \
