@@ -35,7 +35,7 @@
     chdir: /home/ubuntu/app
 
 - name: "Install backend dependencies using NPM"
-  command: npm install --production
+  command: npm install
   args:
     chdir: /home/ubuntu/app
 
