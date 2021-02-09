@@ -16,6 +16,7 @@
     update_cache: yes
 
 - name: "Install nodejs"
+  become: true
   apt:
     update_cache: yes
     name: nodejs
