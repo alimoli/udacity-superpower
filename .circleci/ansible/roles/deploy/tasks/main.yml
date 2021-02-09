@@ -3,11 +3,14 @@
   apt:
     upgrade: "yes"
 
-- name: "Install dependencies"
+- name: "Add APT node v.10 repository"
   become: true
   apt_repository:
     repo: deb https://deb.nodesource.com/setup_10.x nodejs
     state: present
+
+- name: "Install dependencies"
+  become: true
   apt:
     name: ["nodejs", "npm"]
     update_cache: yes
