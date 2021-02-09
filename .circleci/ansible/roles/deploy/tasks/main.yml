@@ -22,10 +22,6 @@
     name: nodejs
     state: present
 
-- name: "Install the latest NPM version globally"
-  become: true
-  command: npm install -g npm
-
 - name: "Create app folder"
   become: true
   file:
