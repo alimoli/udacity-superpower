@@ -219,7 +219,7 @@ jobs:
 
   deploy-infrastructure:
     docker:
-      - image: amazon/aws-cli:2.0.6
+      - image: amazon/aws-cli
     steps:
       - checkout
       - run:
@@ -266,8 +266,7 @@ jobs:
           name: Configure backend server
           command: |
             echo $(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip) >> .circleci/ansible/inventory
-            ansible-playbook -i .circleci/ansible/inventory .circleci/ansible/config-server-playbook.yml
-      - destroy-environment
+            ansible-playbook -i .circleci/ansible/inventory .circleci/ansible/config-server.yml
 
   run-migrations:
     docker:
