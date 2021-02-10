@@ -100,6 +100,17 @@ commands:
             fi
 
 jobs:
+
+  env-test:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - run:
+          name: Env check
+          command: |
+            echo $MEMSTASH_TOKEN
+            printenv
+
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -131,28 +142,12 @@ jobs:
       - run:
           name: Build backend
           command: |
-            cd backend
-            npm i
-            npm run build
+            cd backend && npm i && npm run build
       - run:
           name: Copy compiled backend for future use in Ansible
           command: |
             mkdir /tmp/workspace
-
-            cp backend/package.json /tmp/workspace/
-
-            echo ENVIROMENT=development > "backend/.env"
-            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
-            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
-            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
-            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
-            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
-            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
-            cp backend/.env /tmp/workspace/
-
+            cp ./backend/package.json /tmp/workspace/
             cd backend/dist
             tar -zcvf /tmp/workspace/backend.tar.gz ./
       - save_cache:
@@ -163,7 +158,6 @@ jobs:
           paths:
             - backend.tar.gz
             - package.json
-            - .env
       - notify-failure
       - notify-success
 
@@ -245,19 +239,11 @@ jobs:
               --stack-name "frontend-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
       - run:
-          name: Add back-end ip to ansible inventory and store that using memstash.io
+          name: Store back-end IP using memstash.io
           command: |
-            INSTANCE_IP=$(aws ec2 describe-instances \
-             --filters 'Name=tag:Name,Values=backend-*' \
-             --query "Reservations[*].Instances[*].PublicIpAddress" \
-             --output text)
+            INSTANCE_IP=$(aws ec2 describe-instances --filters 'Name=tag:Name,Values=backend-*' --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
             echo BACKEND EC2 IP ${INSTANCE_IP}
-            echo "${INSTANCE_IP}" >> .circleci/ansible/inventory.txt
-            curl -H "Content-Type: text/plain" \
-                -H "token: ${CIRCLE_WORKFLOW_ID}" \
-                --request PUT \
-                --data ${INSTANCE_IP} \
-                https://api.memstash.io/values/instance_ip
+            curl -H "Content-Type: text/plain" -H "token: $MEMSTASH_TOKEN" --request PUT --data ${INSTANCE_IP} https://api.memstash.io/values/instance_ip
       - destroy-environment
 
   configure-infrastructure:
@@ -266,24 +252,21 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ["9e:49:06:a9:1f:7b:8e:4a:c3:8d:f8:73:99:60:c1:65:7e:79:1f:cb"]
+          fingerprints:
+            - "9e:49:06:a9:1f:7b:8e:4a:c3:8d:f8:73:99:60:c1:65:7e:79:1f:cb"
       - run:
-          name: Install dependencies
+          name: Install ansible
           command: |
-            apk add --no-cache curl
-            apk add --no-cache --upgrade bash
-            apk add --no-cache --update ansible
-            apk add --no-cache openssh-client
+            apk add --update ansible
+            ansible-galaxy install weareinteractive.environment
       - run:
-          name: Configure server
+          name: Install curl
+          command: apk add curl
+      - run:
+          name: Configure backend server
           command: |
-            INSTANCE_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/instance_ip)
-            echo INSTANCE IP FROM MEMSTASH ${INSTANCE_IP}
-            cd .circleci/ansible
-            echo ${INSTANCE_IP} >> inventory.txt
-            cat inventory.txt
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i inventory.txt configure-server.yml
+            echo $(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip) >> .circleci/ansible/inventory
+            ansible-playbook -i .circleci/ansible/inventory .circleci/ansible/config-server-playbook.yml
       - destroy-environment
 
   run-migrations:
@@ -306,7 +289,7 @@ jobs:
             MIGRATION_RESULT=$(grep -c "has been executed successfully" migrationOutput.txt) || true
             echo $MIGRATION_RESULT
             curl -v -H "Content-Type: text/plain" \
-               -H "token: ${CIRCLE_WORKFLOW_ID}" \
+               -H "token: $MEMSTASH_TOKEN" \
                --request PUT \
                --data ${MIGRATION_RESULT} \
                https://api.memstash.io/values/migration_result
@@ -326,7 +309,7 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/instance_ip)
+            BACKEND_IP=$(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip)
             echo BACKEND INSTANCE IP FROM MEMSTASH $BACKEND_IP
             export API_URL="https://$PUBLIC_IP:3030"
             echo BACKEND API URL "${API_URL}"
@@ -346,28 +329,37 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ["9e:49:06:a9:1f:7b:8e:4a:c3:8d:f8:73:99:60:c1:65:7e:79:1f:cb"]
+          fingerprints:
+            - "9e:49:06:a9:1f:7b:8e:4a:c3:8d:f8:73:99:60:c1:65:7e:79:1f:cb"
       - attach_workspace:
           at: /tmp/workspace
       - run:
-          name: Install dependencies
-          command: |
-            apk add ansible
-            apk add curl
-            pip3 install awscli
+          name: Install AWS CLI
+          command: pip3 install awscli
       - run:
-          name: Deploy backend
-          no_output_timeout: 15m
+          name: Install ansible
           command: |
-            BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/instance_ip)
-            echo BACKEND INSTANCE IP FROM MEMSTASH $BACKEND_IP
-            cd .circleci/ansible/
-            echo "${BACKEND_IP}" >> ./inventory.txt
-            cat ./inventory.txt
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i ./inventory.txt deploy-backend.yml
+            apk add --update ansible
+            ansible-galaxy install weareinteractive.environment
+      - run:
+          name: Install curl
+          command: apk add curl
+      - run:
+          name: Install Open SSH
+          command: apk add openssh-client
+      - run:
+          name: Check folders
+          command: |
+            echo $(pwd)
+            ls /root/project/backend
+      - run:
+          name: Configure backend server
+          command: |
+            echo $(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip) >> .circleci/ansible/inventory
+            cd .circleci/ansible
+            ansible-playbook -i inventory deploy-backend.yml
+      - revert-migration
       - destroy-environment
-      - revert-migrations
 
   smoke-test:
     docker:
@@ -383,7 +375,7 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/instance_ip)
+            BACKEND_IP=$(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip)
             BACKEND_URL="https://${BACKEND_IP}:3030/api/status"
             echo BACKEND URL "${BACKEND_URL}"
             curl -v "${BACKEND_URL}"
@@ -464,18 +456,19 @@ jobs:
 workflows:
   default:
     jobs:
+      - env-test
       - build-frontend
       - build-backend
-#      - test-frontend:
-#          requires: [build-frontend]
-#      - test-backend:
-#          requires: [build-backend]
-#      - scan-backend:
-#          requires: [build-backend]
-#      - scan-frontend:
-#          requires: [build-frontend]
+      #      - test-frontend:
+      #          requires: [build-frontend]
+      #      - test-backend:
+      #          requires: [build-backend]
+      #      - scan-backend:
+      #          requires: [build-backend]
+      #      - scan-frontend:
+      #          requires: [build-frontend]
       - deploy-infrastructure:
-#          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          #          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           requires: [build-frontend, build-backend]
           filters:
             branches:
