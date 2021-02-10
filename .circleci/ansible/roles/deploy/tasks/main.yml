@@ -18,6 +18,13 @@
     dest: /home/ubuntu/app/
     owner: ubuntu
 
+- name: "Copy .env to server"
+  become: true
+  copy:
+    src: /tmp/workspace/.env
+    dest: /home/ubuntu/app/
+    owner: ubuntu
+
 - name: "Install backend dependencies using NPM"
   command: npm install
   args:
