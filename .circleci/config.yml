@@ -358,7 +358,7 @@ jobs:
             echo $(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip) >> .circleci/ansible/inventory
             cd .circleci/ansible
             ansible-playbook -i inventory deploy-backend.yml
-      - revert-migration
+      - revert-migrations
       - destroy-environment
 
   smoke-test:
@@ -396,8 +396,8 @@ jobs:
             else
               return 1
             fi
-      - destroy-environment
       - revert-migrations
+      - destroy-environment
 
   cloudfront-update:
     docker:
@@ -430,8 +430,9 @@ jobs:
               aws cloudformation delete-stack --stack-name udacity-backend-${OldWorkflowId}
             fi
 
-      - destroy-environment
       - revert-migrations
+      - destroy-environment
+
 
 #cleanup:
 #  docker:
