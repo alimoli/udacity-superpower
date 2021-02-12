@@ -355,8 +355,8 @@ jobs:
           name: Configure backend server
           command: |
             echo $(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip) >> .circleci/ansible/inventory
-            cd .circleci/ansible
-            ansible-playbook -i inventory deploy-backend.yml
+            cat .circleci/ansible/inventory
+            ansible-playbook -i .circleci/ansible/inventory .circleci/ansible/deploy-backend.yml
       - revert-migrations
       - destroy-environment
 
