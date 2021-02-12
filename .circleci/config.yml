@@ -266,6 +266,9 @@ jobs:
           name: Configure backend server
           command: |
             echo $(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip) >> .circleci/ansible/inventory
+            echo INVENTORY
+            ls -la .circleci/ansible
+            cat .circleci/ansible/inventory
             ansible-playbook -i .circleci/ansible/inventory .circleci/ansible/configure-server.yml
 
   run-migrations:
@@ -355,6 +358,8 @@ jobs:
           name: Configure backend server
           command: |
             echo $(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip) >> .circleci/ansible/inventory
+            echo INVENTORY
+            ls -la .circleci/ansible
             cat .circleci/ansible/inventory
             ansible-playbook -i .circleci/ansible/inventory .circleci/ansible/deploy-backend.yml
       - revert-migrations
