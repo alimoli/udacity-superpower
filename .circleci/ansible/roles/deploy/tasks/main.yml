@@ -34,6 +34,13 @@
   args:
     chdir: /home/ubuntu/app
 
+- name: "Start backend with pm2"
+  become: yes
+  shell: |
+    pm2 logs udapeople-backend
+  args:
+    chdir: /home/ubuntu/app
+
 #- name: "Set pm2 start as service"
 #  become: yes
 #  shell: |
