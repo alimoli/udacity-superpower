@@ -34,10 +34,13 @@
   args:
     chdir: /home/ubuntu/app
 
-- name: "Log pm2 after 10 seconds"
+- name: "Pause for 10 seconds"
   become: yes
   pause:
     seconds: 10
+
+- name: "Log pm2"
+  become: yes
   shell: |
     pm2 logs -o pm2.log
     ls -la
