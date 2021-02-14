@@ -34,7 +34,7 @@
   args:
     chdir: /home/ubuntu/app
 
-- name: "Set pm2 start as service"
-  become: yes
-  shell: |
-    env PATH=$PATH:/usr/local/bin pm2 startup -u ubuntu
+#- name: "Set pm2 start as service"
+#  become: yes
+#  shell: |
+#    env PATH=$PATH:/usr/local/bin pm2 startup -u ubuntu
