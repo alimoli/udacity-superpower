@@ -266,8 +266,7 @@ jobs:
           name: Configure backend server
           command: |
             echo $(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip) >> .circleci/ansible/inventory.txt
-            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml >> /tmp/ansible.log
-            cat /tmp/ansible.log
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml -v
 
   run-migrations:
     docker:
@@ -287,8 +286,8 @@ jobs:
           command: |
             cd backend
             MIGRATION_RESULT=$(grep -c "has been executed successfully" migrationOutput.txt) || true
-            echo $MIGRATION_RESULT
-            curl -v -H "Content-Type: text/plain" \
+            echo Migration result: $MIGRATION_RESULT
+            curl -H "Content-Type: text/plain" \
                -H "token: $MEMSTASH_TOKEN" \
                --request PUT \
                --data ${MIGRATION_RESULT} \
@@ -357,8 +356,7 @@ jobs:
           name: Configure backend server
           command: |
             echo $(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip) >> .circleci/ansible/inventory.txt
-            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml >> /tmp/ansible.log
-            cat /tmp/ansible.log
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml -v
       - revert-migrations
       - destroy-environment
 
