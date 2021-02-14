@@ -34,10 +34,14 @@
   args:
     chdir: /home/ubuntu/app
 
-- name: "Start backend with pm2"
+- name: "Log pm2 after 10 seconds"
   become: yes
+  pause:
+    seconds: 10
   shell: |
-    pm2 logs udapeople-backend
+    pm2 logs -o pm2.log
+    ls -la
+    cat pm2.log
   args:
     chdir: /home/ubuntu/app
 
