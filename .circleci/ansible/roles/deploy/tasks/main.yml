@@ -28,7 +28,6 @@
     chdir: /home/ubuntu/app
 
 - name: "Start backend with pm2"
-  become: yes
   command: pm2 start main.js --name udapeople-backend
   args:
     chdir: /home/ubuntu/app
