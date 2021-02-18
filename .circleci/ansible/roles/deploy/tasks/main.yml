@@ -33,7 +33,7 @@
   # shell: |
     #pm2 start main.js --name udapeople-backend
   args:
-    chdir: /home/ubuntu/app/dist
+    chdir: /home/ubuntu/app
 
 #- name: "Log pm2"
 #  become: yes
