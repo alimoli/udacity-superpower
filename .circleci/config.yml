@@ -417,30 +417,30 @@ jobs:
       - destroy-environment
 
 
-cleanup:
-  docker:
-    - image: amazon/aws-cli
-  steps:
-    - checkout
-    - run:
-        name: Get old workflow id and stacks
-        command: |
-          OldWorkflowId=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --output text)
-          echo Old workflow ID ${OldWorkflowId}
-          STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --output text)
-          echo Stacks ${STACKS}
-    - run:
-        name: Remove old stacks and files
-        command: |
-          if [[ "${STACKS[@]}" =~ "${OldWorkflowId}" ]]
-          then
-            # Delete files from bucket
-            aws s3 rm s3://udapeople-${OldWorkflowId}/ --recursive
-            # Delete front end stack
-            aws cloudformation delete-stack --stack-name udacity-frontend-${OldWorkflowId}
-            # Delete back end stack
-            aws cloudformation delete-stack --stack-name udacity-backend-${OldWorkflowId}
-          fi
+  cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Get old workflow id and stacks
+          command: |
+            OldWorkflowId=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --output text)
+            echo Old workflow ID ${OldWorkflowId}
+            STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --output text)
+            echo Stacks ${STACKS}
+      - run:
+          name: Remove old stacks and files
+          command: |
+            if [[ "${STACKS[@]}" =~ "${OldWorkflowId}" ]]
+            then
+              # Delete files from bucket
+              aws s3 rm s3://udapeople-${OldWorkflowId}/ --recursive
+              # Delete front end stack
+              aws cloudformation delete-stack --stack-name udacity-frontend-${OldWorkflowId}
+              # Delete back end stack
+              aws cloudformation delete-stack --stack-name udacity-backend-${OldWorkflowId}
+            fi
 
 
 workflows:
