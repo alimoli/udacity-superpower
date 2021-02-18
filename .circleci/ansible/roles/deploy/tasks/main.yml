@@ -34,11 +34,6 @@
   args:
     chdir: /home/ubuntu/app
 
-- name: "Pause for 10 seconds"
-  become: yes
-  pause:
-    seconds: 10
-
 - name: "Log pm2"
   become: yes
   shell: |
@@ -48,7 +43,7 @@
   args:
     chdir: /home/ubuntu/app
 
-#- name: "Set pm2 start as service"
-#  become: yes
-#  shell: |
-#    env PATH=$PATH:/usr/local/bin pm2 startup -u ubuntu
+- name: "Set pm2 start as service"
+  become: yes
+  shell: |
+    env PATH=$PATH:/usr/local/bin pm2 startup -u ubuntu
