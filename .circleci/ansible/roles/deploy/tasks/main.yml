@@ -28,7 +28,7 @@
     chdir: /home/ubuntu/app
 
 - name: "Build app"
-  command: npm run build
+  command: npm i && npm run build
   args:
     chdir: /home/ubuntu/app
 
