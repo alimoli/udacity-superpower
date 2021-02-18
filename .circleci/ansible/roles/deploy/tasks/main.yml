@@ -27,13 +27,16 @@
   args:
     chdir: /home/ubuntu/app
 
-- name: "Start backend with pm2"
-  become: yes
-  command: pm2 start main.js --name udapeople-backend
-  # shell: |
-    #pm2 start main.js --name udapeople-backend
+- name: "Build app"
+  command: npm run build
   args:
     chdir: /home/ubuntu/app
+
+- name: "Start backend with pm2"
+  become: yes
+  command: pm2 start npm -- run start
+  args:
+    chdir: /home/ubuntu/app/dist
 
 #- name: "Log pm2"
 #  become: yes
