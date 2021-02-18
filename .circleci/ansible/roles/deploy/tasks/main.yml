@@ -18,10 +18,6 @@
     dest: /home/ubuntu/app/
     owner: ubuntu
 
-- name: "Test presence of env variables"
-  debug:
-    msg: "TYPEORM_ENTITIES is: '{{ lookup('env', 'TYPEORM_ENTITIES') }}'"
-
 - name: "Install backend dependencies using NPM"
   command: npm install --production
   args:
@@ -34,19 +30,9 @@
     export TYPEORM_USERNAME="{{ lookup('env', 'TYPEORM_USERNAME') }}"
     export TYPEORM_PASSWORD="{{ lookup('env', 'TYPEORM_PASSWORD') }}"
     export TYPEORM_DATABASE="{{ lookup('env', 'TYPEORM_DATABASE') }}"
-    printenv
     pm2 start main.js --name udapeople-backend
   args:
     chdir: /home/ubuntu/app
-
-#- name: "Log pm2"
-#  become: yes
-#  shell: |
-#    pm2 logs -o pm2.log --no-daemon
-#    ls -la
-#    cat pm2.log
-#  args:
-#    chdir: /home/ubuntu/app
 
 - name: "Set pm2 start as service"
   become: yes
