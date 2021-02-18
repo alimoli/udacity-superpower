@@ -417,22 +417,18 @@ jobs:
       - revert-migrations
       - destroy-environment
 
-
   cleanup:
     docker:
       - image: amazon/aws-cli
     steps:
       - checkout
       - run:
-          name: Get old workflow id and stacks
+          name: Remove old stacks and files
           command: |
             OldWorkflowId=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --output text)
             echo Old workflow ID ${OldWorkflowId}
             STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --output text)
             echo Stacks ${STACKS}
-      - run:
-          name: Remove old stacks and files
-          command: |
             if [[ "${STACKS[@]}" =~ "${OldWorkflowId}" ]]
             then
               # Delete files from bucket
@@ -476,5 +472,8 @@ workflows:
           requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
           requires: [smoke-test]
+          filters:
+            branches:
+              only: [main]
       - cleanup:
           requires: [cloudfront-update]
