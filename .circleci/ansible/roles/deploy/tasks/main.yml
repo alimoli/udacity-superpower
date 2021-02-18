@@ -29,7 +29,7 @@
 
 - name: "Start backend with pm2"
   become: yes
-  command: pm2 start npm -- run start
+  command: pm2 start main.js --name udapeople-backend
   # shell: |
     #pm2 start main.js --name udapeople-backend
   args:
