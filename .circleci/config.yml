@@ -375,7 +375,7 @@ jobs:
           name: Backend smoke test.
           command: |
             BACKEND_IP=$(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip)
-            BACKEND_URL="https://${BACKEND_IP}:3030/api/status"
+            BACKEND_URL="${BACKEND_IP}:3030/api/status"
             echo BACKEND URL "${BACKEND_URL}"
             curl -v "${BACKEND_URL}"
             if curl -s "${BACKEND_URL}" | grep "ok"
