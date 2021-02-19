@@ -407,9 +407,17 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Store old workflow ID (before clodufront update)
+          command: |
+            OldWorkflowId=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --no-paginate --output text)
+            echo Old workflow ID ${OldWorkflowId}
+            if [ ! -z $OldWorkflowID ]
+            then
+              curl -H "Content-Type: text/plain" -H "token: $MEMSTASH_TOKEN" --request PUT --data ${OldWorkflowId} https://api.memstash.io/values/old_workflow_id
+            fi
+      - run:
           name: Update cloudfront distribution
           command: |
-
             aws cloudformation deploy \
               --stack-name udapeople-cloudfront \
               --template-file .circleci/files/cloudfront.yml \
@@ -428,18 +436,17 @@ jobs:
       - run:
           name: Remove old stacks and files
           command: |
-            OldWorkflowId=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --output text)
+            OldWorkflowId=$(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/old_workflow_id)
             echo Old workflow ID ${OldWorkflowId}
             STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --output text)
             echo Stacks ${STACKS}
-            if [[ "${STACKS[@]}" =~ "${OldWorkflowId}" ]]
+            if [ ! -z $OldWorkflowID ]
             then
-              # Delete files from bucket
               aws s3 rm s3://udapeople-${OldWorkflowId}/ --recursive
-              # Delete front end stack
               aws cloudformation delete-stack --stack-name frontend-${OldWorkflowId}
-              # Delete back end stack
               aws cloudformation delete-stack --stack-name backend-${OldWorkflowId}
+            else
+              echo "No resources to cleanup."
             fi
 
 
