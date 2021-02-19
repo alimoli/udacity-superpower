@@ -25,6 +25,8 @@
 
 - name: "Start backend with pm2"
   shell: |
+    export ENVIRONMENT=production
+    export NODE_ENV=production
     export TYPEORM_HOST="{{ lookup('env', 'TYPEORM_HOST') }}"
     export TYPEORM_ENTITIES="{{ lookup('env', 'TYPEORM_ENTITIES') }}"
     export TYPEORM_USERNAME="{{ lookup('env', 'TYPEORM_USERNAME') }}"
