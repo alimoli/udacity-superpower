@@ -411,7 +411,7 @@ jobs:
           command: |
             OldWorkflowId=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --no-paginate --output text)
             echo Old workflow ID ${OldWorkflowId}
-            if [ ! -z $OldWorkflowID ]
+            if [ ! -z $OldWorkflowId ]
             then
               curl -H "Content-Type: text/plain" -H "token: $MEMSTASH_TOKEN" --request PUT --data ${OldWorkflowId} https://api.memstash.io/values/old_workflow_id
             fi
@@ -440,7 +440,7 @@ jobs:
             echo Old workflow ID ${OldWorkflowId}
             STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --output text)
             echo Stacks ${STACKS}
-            if [ ! -z $OldWorkflowID ]
+            if [ ! -z $OldWorkflowId ]
             then
               aws s3 rm s3://udapeople-${OldWorkflowId}/ --recursive
               aws cloudformation delete-stack --stack-name frontend-${OldWorkflowId}
