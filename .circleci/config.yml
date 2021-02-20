@@ -313,7 +313,7 @@ jobs:
           command: |
             BACKEND_IP=$(curl -H "token: $MEMSTASH_TOKEN" --request GET https://api.memstash.io/values/instance_ip)
             echo BACKEND INSTANCE IP FROM MEMSTASH $BACKEND_IP
-            export API_URL="https://${BACKEND_IP}:3030"
+            export API_URL="http://${BACKEND_IP}:3030"
             echo BACKEND API URL "${API_URL}"
             cd frontend
             npm install
